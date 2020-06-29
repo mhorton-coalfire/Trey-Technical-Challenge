@@ -2,6 +2,7 @@ resource "google_compute_instance_template" "default" {
   name                    = var.template_name
   machine_type            = var.machine_type
   metadata_startup_script = var.startup_script
+  tags                    = var.tags
 
   disk {
     disk_size_gb  = var.disk_size

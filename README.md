@@ -3,8 +3,7 @@
 ## Overview
 Began the implementation by drawing out the scenario in Lucidchart.
 
-![Image of Scenario implementation]
-(https://storage.googleapis.com/sample-documentation/scenario.png)
+![Image of Scenario implementation](https://storage.googleapis.com/sample-documentation/scenario.png)
 
 * Structured the terraform project with a series of modules to clean up the main.tf file.
 * Several of the instructions in the scenario referred to AWS terminology, they were translated to Google Cloud as follows:
@@ -14,12 +13,11 @@ Began the implementation by drawing out the scenario in Lucidchart.
 
 Resources used:
 * Terraform documentation
-* Terrafor Registry (pulled several modules from here, sticking with those created by Google)
+* Terraform Registry (pulled several modules from here, sticking with those created by Google)
 
 Screenshots:
 * Subnet 1 instance SSH:
-![Image of ssh screenshot]
-()
+![Image of ssh screenshot](https://storage.googleapis.com/sample-documentation/Screen%20Shot%202020-06-29%20at%204.57.36%20PM.png)
 
 ## Deployment Instructions
 * Set desired Google Cloud Project ID, Region, and Default Zone in terraform.tfvars

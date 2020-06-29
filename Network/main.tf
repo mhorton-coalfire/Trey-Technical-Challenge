@@ -5,7 +5,6 @@ module "vpc" {
   project_id        = var.project_id
   network_name      = var.network_name
   routing_mode      = "GLOBAL"
-  shared_vpc_host   = true
 
   subnets           = [
     {
@@ -50,5 +49,5 @@ module "network-firewall" {
   project_id                = var.project_id
   network                   = module.vpc.network_name
 
-  admin_ranges              = ["10.0.0.0/12"]
+  admin_ranges              = ["10.0.0.0/16"]
 }
