@@ -23,7 +23,7 @@ module "redhat_instance" {
   source          = "./InstanceTemplates"
 
   template_name   = "redhat-instance-template"
-  machine_type    = "n1-standard-2"
+  machine_type    = "n2-standard-2"
   tags            = ["ssh"]
 
   disk_size       = "20"
@@ -40,7 +40,7 @@ module "nginx_instance" {
   source          = "./InstanceTemplates"
 
   template_name   = "nginx-instance-template"
-  machine_type    = "n1-standard-2"
+  machine_type    = "n2-standard-2"
   startup_script  = "sudo yum update && sudo yum install -y nginx"
   tags            = ["html", "ssh"]
 
