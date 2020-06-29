@@ -41,8 +41,8 @@ module "nginx_instance" {
 
   template_name   = "nginx-instance-template"
   machine_type    = "n2-standard-2"
-  startup_script  = "sudo yum update && sudo yum install -y nginx"
-  tags            = ["http", "ssh"]
+  startup_script  = "#! /bin/bash\nyum update\nyum install -y nginx\nservice nginx start"
+  tags            = ["http-server", "ssh"]
 
   disk_size       = "20"
   source_image    = "rhel-cloud/rhel-8"
