@@ -6,17 +6,6 @@ provider "google" {
   region    = var.region_name
 }
 
-# 
-# Create folder
-# 
-module "folders" {
-  source      = "./Folders"
-
-  folder_names  = ["management", "application"]
-  parent_id     = "478509003713"
-  parent_type   = "organizations"
-}
-
 #
 # Create VPC network and subnets
 # 
@@ -24,6 +13,7 @@ module "network" {
   source           = "./Network"
   project_id       = var.project_id
   region_name      = var.region_name
+  network_name     = "cf-vpc"
 }
 
 #  
@@ -34,6 +24,7 @@ module "redhat_instance" {
 
   template_name   = "redhat-instance-template"
   machine_type    = "n1-standard-2"
+  tags            = ["ssh"]
 
   disk_size       = "20"
   source_image    = "rhel-cloud/rhel-8"
@@ -42,58 +33,63 @@ module "redhat_instance" {
   subnet_name     = module.network.subnets[0]
 }
 
-#
-# Create instance template for Nginx webserver
-#
+##
+## Create instance template for Nginx webserver
+##
 module "nginx_instance" {
   source          = "./InstanceTemplates"
 
   template_name   = "nginx-instance-template"
   machine_type    = "n1-standard-2"
-  startup_script  = "apt-get update && apt-get install -y nginx"
+  startup_script  = "sudo yum update && sudo yum install -y nginx"
+  tags            = ["html", "ssh"]
 
   disk_size       = "20"
   source_image    = "rhel-cloud/rhel-8"
-
+  
   network_name    = module.network.network_name
   subnet_name     = module.network.subnets[2]
 }
 
-#
-# Initiate single instance on instance group from Redhat template
-#
-resource "google_compute_instance_group_manager" "redhat" {
-  name                = "redhat-servers"
-  version {
-    instance_template = module.redhat_instance.id
-  }
+##
+## Initiate single instance on instance group from Redhat template
+##
+module "redhat_instances" {
+  source = "terraform-google-modules/vm/google//modules/mig"
+  version = "~> 3.0"
+  project_id = var.project_id
 
-  base_instance_name  = "redhat-server"
-  zone                = var.default_zone
-  target_size         = 1
+  instance_template = module.redhat_instance.id
+  hostname = "redhat-server"
+  region = var.region_name
+  distribution_policy_zones = [var.default_zone]
+  target_size = 1
 }
 
-#
-# Initiate single instance on instance group from Nginx template
-#
-resource "google_compute_instance_group_manager" "nginx" {
-  name                = "nginx-servers"
-  version {
-    instance_template   = module.nginx_instance.id
-  }
+##
+## Initiate single instance on instance group from Nginx template
+##
+module "nginx_group" {
+  source = "terraform-google-modules/vm/google//modules/mig"
+  version = "~> 3.0"
+  project_id = var.project_id
 
-  base_instance_name  = "nginx-server"
-  zone                = var.default_zone
-  target_size         = 1
-  named_port {
-    name = "http"
-    port = 80
-  }
+  instance_template = module.nginx_instance.id
+  hostname = "nginx-server"
+  region = var.region_name
+  distribution_policy_zones = [var.default_zone]
+  target_size = 1
+  named_ports = [
+    {
+      name = "http"
+      port = 80
+    }
+  ]
 }
 
-#
-# Create Http(s) Load Balancer
-#
+##
+## Create Http(s) Load Balancer
+##
 module "gce-lb-http" {
   source      = "GoogleCloudPlatform/lb-http/google"
   version     = "~> 4.1.0"
@@ -101,6 +97,8 @@ module "gce-lb-http" {
 
   name        = "nginx-group-lb"
   target_tags = ["http"]
+  firewall_networks = [module.network.network_name]
+  firewall_projects = [var.project_id]
 
   backends = {
     default = {
@@ -132,7 +130,7 @@ module "gce-lb-http" {
 
       groups = [
         {
-          group                        = google_compute_instance_group_manager.nginx.self_link
+          group                        = module.nginx_group.instance_group
           balancing_mode               = null
           capacity_scaler              = null
           description                  = null

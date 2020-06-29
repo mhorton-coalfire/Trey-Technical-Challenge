@@ -1,6 +1,6 @@
 resource "google_compute_instance_template" "default" {
-  name            = var.template_name
-  machine_type    = var.machine_type
+  name                    = var.template_name
+  machine_type            = var.machine_type
   metadata_startup_script = var.startup_script
 
   disk {
@@ -11,6 +11,9 @@ resource "google_compute_instance_template" "default" {
   }
 
   network_interface {
+    access_config {
+    }
+
     network       = var.network_name
     subnetwork    = var.subnet_name
   }

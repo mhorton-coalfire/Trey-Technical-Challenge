@@ -14,6 +14,11 @@ variable "startup_script" {
   default       = ""
 }
 
+variable "tags" {
+  type          = list(string)
+  description   = "Tags for server"
+}
+
 variable "disk_size" {
   type          = string
   description   = "Disk size for template"

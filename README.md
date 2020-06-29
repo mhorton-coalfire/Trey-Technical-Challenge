@@ -1,5 +1,23 @@
-# Coalfire Technical Challenge
+# Terraform Technical Challenge
+
+## Overview
+
 
 ## Deployment Instructions
-1. Set desired project and region in deploy.tfvars
+* Set desired Google Cloud Project ID, Region, and Default Zone in terraform.tfvars
 
+### Deploy to Google Cloud
+Initialize Terraform:
+```
+$ terraform init
+```
+
+View Terraform plans:
+```
+$ terraform plan
+```
+
+Use Terraform to provision Google Cloud resources:
+```
+$ terraform apply
+```
