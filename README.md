@@ -16,6 +16,10 @@ Resources used:
 * Terraform documentation
 * Terrafor Registry (pulled several modules from here, sticking with those created by Google)
 
+Screenshots:
+* Subnet 1 instance SSH:
+![Image of ssh screenshot]
+()
 
 ## Deployment Instructions
 * Set desired Google Cloud Project ID, Region, and Default Zone in terraform.tfvars
