@@ -1,8 +1,14 @@
+# 
+# Set provider
+# 
 provider "google" {
   project   = var.project_id
   region    = var.region_name
 }
 
+# 
+# Create folder
+# 
 module "folders" {
   source      = "./Folders"
 
@@ -11,12 +17,18 @@ module "folders" {
   parent_type   = "organizations"
 }
 
+#
+# Create VPC network and subnets
+# 
 module "network" {
   source           = "./Network"
   project_id       = var.project_id
   region_name      = var.region_name
 }
 
+#  
+# Create instance template for Redhat instance
+# 
 module "redhat_instance" {
   source          = "./InstanceTemplates"
 
@@ -30,6 +42,9 @@ module "redhat_instance" {
   subnet_name     = module.network.subnets[0]
 }
 
+#
+# Create instance template for Nginx webserver
+#
 module "nginx_instance" {
   source          = "./InstanceTemplates"
 
@@ -44,6 +59,9 @@ module "nginx_instance" {
   subnet_name     = module.network.subnets[2]
 }
 
+#
+# Initiate single instance on instance group from Redhat template
+#
 resource "google_compute_instance_group_manager" "redhat" {
   name                = "redhat-servers"
   version {
@@ -55,6 +73,9 @@ resource "google_compute_instance_group_manager" "redhat" {
   target_size         = 1
 }
 
+#
+# Initiate single instance on instance group from Nginx template
+#
 resource "google_compute_instance_group_manager" "nginx" {
   name                = "nginx-servers"
   version {
@@ -70,6 +91,9 @@ resource "google_compute_instance_group_manager" "nginx" {
   }
 }
 
+#
+# Create Http(s) Load Balancer
+#
 module "gce-lb-http" {
   source      = "GoogleCloudPlatform/lb-http/google"
   version     = "~> 4.1.0"
