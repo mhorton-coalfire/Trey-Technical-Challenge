@@ -20,7 +20,7 @@ Screenshots:
 ![Image of ssh screenshot](https://storage.googleapis.com/sample-documentation/Screen%20Shot%202020-06-29%20at%204.57.36%20PM.png)
 
 ## Deployment Instructions
-* Set desired Google Cloud Project ID, Region, and Default Zone in terraform.tfvars
+* Set desired Google Cloud Organiation ID, Billing Account Id, Region, and Default Zone in terraform.tfvars
 
 ### Deploy to Google Cloud
 Initialize Terraform:
