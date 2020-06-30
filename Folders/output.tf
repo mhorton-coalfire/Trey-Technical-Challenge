@@ -1,3 +1,3 @@
-output "names" {
-  value = module.folders.names_list
+output "name" {
+  value = google_folder.default.name
 }

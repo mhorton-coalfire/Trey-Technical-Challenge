@@ -2,8 +2,33 @@
 # Set provider
 # 
 provider "google" {
-  project   = var.project_id
   region    = var.region_name
+}
+
+#
+# Create folders
+#
+module "management_folder" {
+  source          = "./Folders"
+  name            = "Management"
+  organization_id = var.organization_id
+}
+
+module "application_folder" {
+  source          = "./Folders"
+  name            = "Application"
+  organization_id = var.organization_id
+}
+
+#
+# Create Management project
+# 
+module "management_project" {
+  source              = "./Projects"
+  name                = "management-project"
+  folder_id           = module.management_folder.name
+  organization_id     = var.organization_id
+  billing_account_id  = var.billing_account_id
 }
 
 #
@@ -11,9 +36,29 @@ provider "google" {
 # 
 module "network" {
   source           = "./Network"
-  project_id       = var.project_id
+  project_id       = module.management_project.id
   region_name      = var.region_name
   network_name     = "cf-vpc"
+}
+
+#
+# Create Appliation project
+#
+module "application_project" {
+  source      = "terraform-google-modules/project-factory/google//modules/shared_vpc"
+  version     = "~> 8.0"
+
+  name                = "application-project"
+  random_project_id   = true
+  folder_id           = module.application_folder.name
+  org_id              = var.organization_id
+  billing_account     = var.billing_account_id
+  shared_vpc_enabled  = true
+  
+  shared_vpc          = module.network.project_id
+  shared_vpc_subnets  = module.network.subnets_self_links
+
+  disable_services_on_destroy = false
 }
 
 #  
@@ -21,9 +66,10 @@ module "network" {
 # 
 module "redhat_instance" {
   source          = "./InstanceTemplates"
+  project_id        = module.application_project.project_id
 
   template_name   = "redhat-instance-template"
-  machine_type    = "n2-standard-2"
+  machine_type    = "n1-standard-2"
   tags            = ["ssh"]
 
   disk_size       = "20"
@@ -31,6 +77,7 @@ module "redhat_instance" {
 
   network_name    = module.network.network_name
   subnet_name     = module.network.subnets[0]
+  vpc_project     = module.network.project_id
 }
 
 ##
@@ -38,9 +85,10 @@ module "redhat_instance" {
 ##
 module "nginx_instance" {
   source          = "./InstanceTemplates"
+  project_id         = module.application_project.project_id
 
   template_name   = "nginx-instance-template"
-  machine_type    = "n2-standard-2"
+  machine_type    = "n1-standard-2"
   startup_script  = "#! /bin/bash\nyum update\nyum install -y nginx\nservice nginx start"
   tags            = ["http-server", "ssh"]
 
@@ -49,6 +97,7 @@ module "nginx_instance" {
   
   network_name    = module.network.network_name
   subnet_name     = module.network.subnets[2]
+  vpc_project     = module.network.project_id
 }
 
 ##
@@ -57,7 +106,7 @@ module "nginx_instance" {
 module "redhat_instances" {
   source = "terraform-google-modules/vm/google//modules/mig"
   version = "~> 3.0"
-  project_id = var.project_id
+  project_id = module.application_project.project_id
 
   instance_template = module.redhat_instance.id
   hostname = "redhat-server"
@@ -72,7 +121,7 @@ module "redhat_instances" {
 module "nginx_group" {
   source = "terraform-google-modules/vm/google//modules/mig"
   version = "~> 3.0"
-  project_id = var.project_id
+  project_id = module.application_project.project_id
 
   instance_template = module.nginx_instance.id
   hostname = "nginx-server"
@@ -93,12 +142,12 @@ module "nginx_group" {
 module "gce-lb-http" {
   source      = "GoogleCloudPlatform/lb-http/google"
   version     = "~> 4.1.0"
-  project     = var.project_id
+  project     = module.application_project.project_id
 
   name        = "nginx-group-lb"
   target_tags = ["http"]
   firewall_networks = [module.network.network_name]
-  firewall_projects = [var.project_id]
+  firewall_projects = [module.management_project.id]
 
   backends = {
     default = {

@@ -1,4 +1,5 @@
 resource "google_compute_instance_template" "default" {
+  project                 = var.project_id
   name                    = var.template_name
   machine_type            = var.machine_type
   metadata_startup_script = var.startup_script
@@ -15,7 +16,7 @@ resource "google_compute_instance_template" "default" {
     access_config {
     }
 
-    network       = var.network_name
     subnetwork    = var.subnet_name
+    subnetwork_project = var.vpc_project
   }
 }

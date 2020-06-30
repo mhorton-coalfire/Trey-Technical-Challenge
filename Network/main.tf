@@ -6,6 +6,8 @@ module "vpc" {
   network_name      = var.network_name
   routing_mode      = "GLOBAL"
 
+  shared_vpc_host   = true
+
   subnets           = [
     {
       subnet_name   = "${var.network_name}-sub1"

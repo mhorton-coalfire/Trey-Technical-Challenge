@@ -1,3 +1,8 @@
+variable "project_id" {
+  type          = string
+  description   = "Project Id"
+}
+
 variable "template_name" {
   type          = string
   description   = "Template name"
@@ -43,4 +48,9 @@ variable "network_name" {
 variable "subnet_name" {
   type          = string
   description   = "Subnet Name"
+}
+
+variable "vpc_project" {
+  type          = string
+  description   = "VPC Project"
 }
