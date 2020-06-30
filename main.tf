@@ -69,7 +69,7 @@ module "redhat_instance" {
   project_id        = module.application_project.project_id
 
   template_name   = "redhat-instance-template"
-  machine_type    = "n1-standard-2"
+  machine_type    = "n2-standard-2"
   tags            = ["ssh"]
 
   disk_size       = "20"
@@ -88,7 +88,7 @@ module "nginx_instance" {
   project_id         = module.application_project.project_id
 
   template_name   = "nginx-instance-template"
-  machine_type    = "n1-standard-2"
+  machine_type    = "n2-standard-2"
   startup_script  = "#! /bin/bash\nyum update\nyum install -y nginx\nservice nginx start"
   tags            = ["http-server", "ssh"]
 
